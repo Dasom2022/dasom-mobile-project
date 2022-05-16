@@ -23,7 +23,7 @@ const ModalBg=styled.div`
     background:black;
     top:0;
     left:0;
-    opacity:0.2;
+    opacity:0.5;
 `;
 interface IProps{
     closer:React.Dispatch<React.SetStateAction<boolean>>;
