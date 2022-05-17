@@ -91,7 +91,7 @@ function Join() {
   const navigate = useNavigate();
   const { register, handleSubmit, watch } = useForm<ISignup>();
   const onSubmit = ({ username, password, email }: ISignup) => {
-    // postUserData();
+    postUserData();
     // navigate("/");
   };
   const baseURL = "http://52.55.54.57:3333/member/signup";

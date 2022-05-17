@@ -109,10 +109,12 @@ function Login() {
   const navigate = useNavigate();
   const { register, handleSubmit, watch } = useForm<IForm>();
   const onSubmit = ({ id, pw }: IForm) => {
-    navigate("/main");
+    // navigate("/main");
     postUserData();
   };
-  const baseURL = `http://52.55.54.57:3333/member/signin`;
+  const baseURL = `http://52.55.54.57:3333/member/signin?username=${
+    watch().id
+  }&password=${watch().pw}`;
   function postUserData() {
     const config = {
       headers: {
@@ -120,14 +122,7 @@ function Login() {
       },
     };
     axios
-      .post(
-        baseURL,
-        JSON.stringify({
-          username: watch().id,
-          password: watch().pw,
-        }),
-        config
-      )
+      .post(baseURL, config)
       .then((response) => {
         console.log(response);
       })
