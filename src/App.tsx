@@ -1,5 +1,6 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import styled from "styled-components";
+import Home from "./Routes/Home";
 import Main from "./Routes/Main";
 const Wrap = styled.div`
   width: 100vw;
@@ -26,6 +27,7 @@ function App() {
       <Wrap>
         <BrowserRouter>
           <Routes>
+            <Route path="/" element={<Home />}></Route>
             <Route path="/main" element={<Main />}></Route>
           </Routes>
         </BrowserRouter>
