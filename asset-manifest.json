@@ -1,10 +1,10 @@
 {
   "files": {
-    "main.js": "/dasom-mobile-project/static/js/main.f2d0889e.js",
+    "main.js": "/dasom-mobile-project/static/js/main.afd42308.js",
     "index.html": "/dasom-mobile-project/index.html",
-    "main.f2d0889e.js.map": "/dasom-mobile-project/static/js/main.f2d0889e.js.map"
+    "main.afd42308.js.map": "/dasom-mobile-project/static/js/main.afd42308.js.map"
   },
   "entrypoints": [
-    "static/js/main.f2d0889e.js"
+    "static/js/main.afd42308.js"
   ]
 }
