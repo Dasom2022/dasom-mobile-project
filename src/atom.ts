@@ -8,3 +8,7 @@ export const allSelect=atom({
     key:"allSelect",
     default:false
 })
+export const allSelectCancel=atom({
+    key:"cancel",
+    default:false
+})

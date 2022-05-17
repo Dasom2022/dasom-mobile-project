@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useRecoilState, useSetRecoilState } from "recoil";
 import styled from "styled-components";
-import { allSelect, selectedPrice } from "../atom";
+import { allSelect, allSelectCancel, selectedPrice } from "../atom";
 
 interface IProps{
     item:{
@@ -30,7 +30,7 @@ const CheckButton=styled.div<{check:boolean}>`
     height:15px;
     border-radius: 50%;
     border:1px solid black;
-    background-color:${props=>props.check?"skyblue":"white"};
+    background-color:${props=>props.check?"blue":"white"};
     display:flex;
     justify-content: center;
     align-items: center;
@@ -56,7 +56,7 @@ const SecondContent=styled.div`
     flex-grow:6;
 `;
 const Title=styled.div`
-    font-size:14px;
+    font-size:16px;
     width:85%;
 `;
 const Info=styled.div`
@@ -69,10 +69,12 @@ function CheckedItem({item, setter}:IProps){
     const [check, setCheck]=useState(false);
     const [totalPrice,setTotalPrice]=useRecoilState(selectedPrice);
     const [allCheck, setAllCheck]=useRecoilState(allSelect);
+    const [allCheckCancel, setAllCheckCancel]=useRecoilState(allSelectCancel);
     useEffect(()=>{
         if(check)
             setTotalPrice(prev=>prev+item.price);
         else{
+            setAllCheckCancel(false);
             if(totalPrice!==0)
                 setTotalPrice(prev=>prev-item.price);
         }
