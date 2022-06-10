@@ -3,6 +3,9 @@ import styled from "styled-components";
 import Main from "./Routes/Main";
 import Login from "./Routes/Login";
 import Join from "./Routes/Join";
+import KaKaoLogout from "./Auth/KaKaoLogout";
+import KaKaoAuth from "./Auth/KakaoAuth";
+import NaverAuth from "./Auth/NaverAuth";
 const Wrap = styled.div`
   width: 100vw;
   height: 100vh;
@@ -30,6 +33,9 @@ function App() {
           <Routes>
             <Route path="/" element={<Login />}></Route>
             <Route path="/join" element={<Join />}></Route>
+            <Route path="/auth/kakao" element={<KaKaoAuth />}></Route>
+            <Route path="/auth/kakao/logout" element={<KaKaoLogout />}></Route>
+            <Route path="/auth/naver" element={<NaverAuth />}></Route>
             <Route path="/main" element={<Main />}></Route>
           </Routes>
         </BrowserRouter>
