@@ -2,6 +2,9 @@ import styled from "styled-components";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+import NaverLogin from "../Auth/NaverLogin";
+import { userInfoData } from "../atoms";
+import { useRecoilState } from "recoil";
 
 const Wrap = styled.div`
   width: 100vw;
@@ -64,11 +67,17 @@ const Loginbtn = styled.button`
   height: 45px;
   background-color: #388e3c;
 `;
-const Kakaobtn = styled.button`
-  width: 60vw;
-  height: 45px;
-  color: #6b7280;
-  background-color: #ffc107;
+const KakaoBtn = styled.div`
+  background-color: #fee502;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #212121;
+  height: 50px;
+  width: 280px;
+  margin-bottom: 20px;
 `;
 
 const Naverbtn = styled.button`
@@ -106,25 +115,60 @@ interface IForm {
   pw: string;
 }
 function Login() {
+  const [userInfo, setUserInfo] = useRecoilState<any>(userInfoData);
   const navigate = useNavigate();
   const { register, handleSubmit, watch } = useForm<IForm>();
   const onSubmit = ({ id, pw }: IForm) => {
-    // navigate("/main");
     postUserData();
   };
-  const baseURL = `http://52.55.54.57:3333/member/signin?username=${
-    watch().id
-  }&password=${watch().pw}`;
   function postUserData() {
-    const config = {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    };
+    onLogin();
+  }
+
+  //로그인 성공여부
+  const LoginMatch = (val: any) => {
+    if (val.status === 200) {
+      console.log(val);
+      console.log("성공");
+      setUserInfo(val.headers);
+      navigate("/main");
+    } else {
+      console.log("로그인 실패");
+    }
+  };
+  //카카오 로그인시
+  const KakaoClick = () => {
+    const REST_API_KEY = process.env.REACT_APP_REST_API_KEY;
+    const REDIRECT_URI = process.env.REACT_APP_REDIRECT_URL;
+    console.log(REST_API_KEY);
+    const KAKAO_AUTH_URL = `https://kauth.kakao.com/oauth/authorize?client_id=${REST_API_KEY}&redirect_uri=${REDIRECT_URI}&response_type=code`;
+    window.location.href = KAKAO_AUTH_URL;
+  };
+
+  const config = {
+    headers: {
+      "Content-Type": "application/json",
+    },
+    withCredentials: true,
+  };
+  //기본 로그인 api 요청
+  function onLogin() {
     axios
-      .post(baseURL, config)
+      .post(
+        "/login",
+        JSON.stringify({
+          username: watch().id,
+          password: watch().pw,
+        }),
+        config
+      )
       .then((response) => {
-        console.log(response);
+        localStorage.setItem("accessToken", response.data["authorization"]);
+        localStorage.setItem(
+          "refreshToken",
+          response.data["authorization-refresh"]
+        );
+        LoginMatch(response);
       })
       .catch((error) => {
         console.log(error);
@@ -146,7 +190,7 @@ function Login() {
           />
           <input
             {...register("pw", {
-              required: "비밀번호 입력은 필수입니다..",
+              required: "비밀번호 입력은 필수입니다.",
             })}
             placeholder="비밀번호를 입력하세요"
             type="password"
@@ -163,8 +207,8 @@ function Login() {
         </Ul>
       </Joinwrap>
       <APIlogin>
-        <Kakaobtn>카카오 로그인</Kakaobtn>
-        <Naverbtn>네이버 로그인</Naverbtn>
+        <KakaoBtn onClick={KakaoClick}>카카오 로그인</KakaoBtn>
+        <NaverLogin />
       </APIlogin>
     </Wrap>
   );
