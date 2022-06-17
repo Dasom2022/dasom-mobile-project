@@ -11,6 +11,7 @@ import {
 } from "../atoms";
 import CheckedItem from "../Components/CheckedItem";
 import QRModal from "../Components/QRModal";
+import { LogoutHook } from "../Hooks/LogoutHook";
 
 const Container = styled.div`
   width: 100%;
@@ -19,6 +20,9 @@ const Container = styled.div`
   padding: 0 5%;
 `;
 const Header = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   height: 10%;
   & > div:first-child {
     font-size: 45px;
@@ -108,8 +112,7 @@ const FixedItems = styled.div`
 `;
 
 function Main() {
-  const navigate = useNavigate();
-  const [userInfo, setUserInfo] = useRecoilState<any>(userInfoData);
+  const userInfo = useRecoilValue<any>(userInfoData);
   const [naverTokenData, setNaverTkenData] = useRecoilState<any>(naverToken);
   const [QROpen, setQROpen] = useState(false);
   const totalPrice = useRecoilValue(selectedPrice);
@@ -152,29 +155,7 @@ function Main() {
       price: 33000,
     },
   ]);
-  const LogOut = (social: string) => {
-    if (social === "KAKAO") {
-      //카카오 로그아웃
-      const REST_API_KEY = process.env.REACT_APP_REST_API_KEY;
-      const LOGOUT_REDIRECT_URL = process.env.REACT_APP_LOGOUT_REDIRECT_URI;
-      const KAKAO_AUTH_URL_LOGOUT = `https://kauth.kakao.com/oauth/logout?client_id=${REST_API_KEY}&logout_redirect_uri=${LOGOUT_REDIRECT_URL}`;
-      setUserInfo([]);
-      window.location.href = KAKAO_AUTH_URL_LOGOUT;
-    } else if (social === "NAVER") {
-      //네이버 로그아웃
-      const NAVER_AUTH_URL_LOGOUT = `https://nid.naver.com/oauth2.0/token?grant_type=delete&client_id=${process.env.REACT_APP_CLIENT_ID}&client_secret=${process.env.REACT_APP_CLIENT_SECRET}&access_token=${naverTokenData}&service_provider=NAVER`;
-      setUserInfo([]);
-      window.location.href = NAVER_AUTH_URL_LOGOUT;
 
-      // navigate("/");
-    } else {
-      //기본 로그아웃
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("refreshToken");
-      setUserInfo([]);
-      navigate("/");
-    }
-  };
   function handleAllSel() {
     setAllCheck((prev) => !prev);
   }
@@ -187,6 +168,8 @@ function Main() {
         <Container>
           <Header>
             <div>DAMA</div>
+            <div>박수빈님</div>
+            <div onClick={() => LogoutHook(userInfo?.socialType)}>로그아웃</div>
           </Header>
           <CheckList>
             <AllSelect

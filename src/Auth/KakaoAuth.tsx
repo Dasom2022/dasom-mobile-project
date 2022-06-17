@@ -2,9 +2,9 @@ import { useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { userInfoData } from "../atoms";
-import { useRecoilState } from "recoil";
+import { useRecoilState, useSetRecoilState } from "recoil";
 function KaKaoAuth() {
-  const [userInfo, setUserInfo] = useRecoilState<any>(userInfoData);
+  const setUserInfo = useSetRecoilState<any>(userInfoData);
   // calllback으로 받은 인가코드
   const code = new URL(window.location.href).searchParams.get("code");
   const navigate = useNavigate();

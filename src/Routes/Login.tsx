@@ -1,10 +1,10 @@
 import styled from "styled-components";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
 import NaverLogin from "../Auth/NaverLogin";
 import { userInfoData } from "../atoms";
 import { useRecoilState } from "recoil";
+import { getLogin } from "../api";
 
 const Wrap = styled.div`
   width: 100vw;
@@ -119,18 +119,16 @@ function Login() {
   const navigate = useNavigate();
   const { register, handleSubmit, watch } = useForm<IForm>();
   const onSubmit = ({ id, pw }: IForm) => {
-    postUserData();
+    const LoginApi = getLogin(id, pw);
+    LoginMatch(LoginApi);
   };
-  function postUserData() {
-    onLogin();
-  }
 
   //로그인 성공여부
   const LoginMatch = (val: any) => {
-    if (val.status === 200) {
+    if (val?.status === 200) {
       console.log(val);
       console.log("성공");
-      setUserInfo(val.headers);
+      setUserInfo(val?.headers);
       navigate("/main");
     } else {
       console.log("로그인 실패");
@@ -145,35 +143,6 @@ function Login() {
     window.location.href = KAKAO_AUTH_URL;
   };
 
-  const config = {
-    headers: {
-      "Content-Type": "application/json",
-    },
-    withCredentials: true,
-  };
-  //기본 로그인 api 요청
-  function onLogin() {
-    axios
-      .post(
-        "/login",
-        JSON.stringify({
-          username: watch().id,
-          password: watch().pw,
-        }),
-        config
-      )
-      .then((response) => {
-        localStorage.setItem("accessToken", response.data["authorization"]);
-        localStorage.setItem(
-          "refreshToken",
-          response.data["authorization-refresh"]
-        );
-        LoginMatch(response);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  }
   return (
     <Wrap>
       <Titlewrap>
