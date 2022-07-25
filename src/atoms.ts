@@ -24,3 +24,8 @@ export const naverToken = atom<any>({
   key: "naverToken",
   default: "",
 });
+
+export const qrImg = atom<any>({
+  key: "qrImg",
+  default: "",
+});

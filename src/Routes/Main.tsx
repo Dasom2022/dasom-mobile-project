@@ -1,3 +1,4 @@
+import axios from "axios";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useRecoilState, useRecoilValue } from "recoil";
@@ -112,7 +113,8 @@ const FixedItems = styled.div`
 `;
 
 function Main() {
-  const userInfo = useRecoilValue<any>(userInfoData);
+  const navigate = useNavigate();
+  const [userInfo, setUserInfo] = useRecoilState(userInfoData);
   const [naverTokenData, setNaverTkenData] = useRecoilState<any>(naverToken);
   const [QROpen, setQROpen] = useState(false);
   const totalPrice = useRecoilValue(selectedPrice);
@@ -155,7 +157,45 @@ function Main() {
       price: 33000,
     },
   ]);
-
+  const Logout = async (social: string) => {
+    if (social === "KAKAO") {
+      //카카오 로그아웃
+      const KAKAO_AUTH_URL_LOGOUT = `https://kauth.kakao.com/oauth/logout?client_id=${process.env.REACT_APP_REST_API_KEY}&logout_redirect_uri=${process.env.REACT_APP_LOGOUT_REDIRECT_URI}`;
+      setUserInfo([]);
+      window.location.href = KAKAO_AUTH_URL_LOGOUT;
+    } else if (social === "NAVER") {
+      //네이버 로그아웃
+      //네이버 로그아웃 팝업창
+      let testPopUp: any;
+      const openPopUp = () => {
+        testPopUp = window.open(
+          "https://nid.naver.com/nidlogin.logout",
+          "_blank",
+          "toolbar=yes,scrollbars=yes,resizable=yes,width=1,height=1"
+        );
+      };
+      openPopUp();
+      setTimeout(() => testPopUp.close(), 1000);
+      setUserInfo([]);
+      navigate("/");
+    } else {
+      //기본 로그아웃
+      const token = localStorage.getItem("refreshToken");
+      axios
+        .post(`/api/member/auth/logout?refreshToken=${token}`)
+        .then((response) => {
+          console.log(response);
+        })
+        .catch((error) => {
+          // ... 로그인 실패 처리
+          console.log(error);
+        });
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+      setUserInfo([]);
+      navigate("/");
+    }
+  };
   function handleAllSel() {
     setAllCheck((prev) => !prev);
   }
@@ -164,51 +204,48 @@ function Main() {
   }, [allCheck]);
   return (
     <>
-      {userInfo?.username ? (
-        <Container>
-          <Header>
-            <div>DAMA</div>
-            <div>박수빈님</div>
-            <div onClick={() => LogoutHook(userInfo?.socialType)}>로그아웃</div>
-          </Header>
-          <CheckList>
-            <AllSelect
-              onClick={handleAllSel}
-              check={allCheck && allCheckCancel}
-            >
-              <div>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
-                  <path d="M438.6 105.4C451.1 117.9 451.1 138.1 438.6 150.6L182.6 406.6C170.1 419.1 149.9 419.1 137.4 406.6L9.372 278.6C-3.124 266.1-3.124 245.9 9.372 233.4C21.87 220.9 42.13 220.9 54.63 233.4L159.1 338.7L393.4 105.4C405.9 92.88 426.1 92.88 438.6 105.4H438.6z" />
-                </svg>
-              </div>
-              <span>전체 선택</span>
-            </AllSelect>
-            <List>
-              {imsidata.map((item) => (
-                <CheckedItem
-                  key={item.id}
-                  item={item}
-                  setter={setImsidata}
-                ></CheckedItem>
-              ))}
-            </List>
-          </CheckList>
-          <FixedItems>
+      {/* {userInfo?.username ? ( */}
+      <Container>
+        <Header>
+          <div>DAMA</div>
+          <div>{userInfo?.username}님</div>
+          <div onClick={() => Logout(userInfo?.socialType)}>로그아웃</div>
+        </Header>
+        <CheckList>
+          <AllSelect onClick={handleAllSel} check={allCheck && allCheckCancel}>
             <div>
-              <span>고른 제품 가격</span>
-              <span>{totalPrice.toLocaleString()}원</span>
-            </div>
-            <div onClick={() => setQROpen(true)}>
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
-                <path d="M144 32C170.5 32 192 53.49 192 80V176C192 202.5 170.5 224 144 224H48C21.49 224 0 202.5 0 176V80C0 53.49 21.49 32 48 32H144zM128 96H64V160H128V96zM144 288C170.5 288 192 309.5 192 336V432C192 458.5 170.5 480 144 480H48C21.49 480 0 458.5 0 432V336C0 309.5 21.49 288 48 288H144zM128 352H64V416H128V352zM256 80C256 53.49 277.5 32 304 32H400C426.5 32 448 53.49 448 80V176C448 202.5 426.5 224 400 224H304C277.5 224 256 202.5 256 176V80zM320 160H384V96H320V160zM352 448H384V480H352V448zM448 480H416V448H448V480zM416 288H448V416H352V384H320V480H256V288H352V320H416V288z" />
+                <path d="M438.6 105.4C451.1 117.9 451.1 138.1 438.6 150.6L182.6 406.6C170.1 419.1 149.9 419.1 137.4 406.6L9.372 278.6C-3.124 266.1-3.124 245.9 9.372 233.4C21.87 220.9 42.13 220.9 54.63 233.4L159.1 338.7L393.4 105.4C405.9 92.88 426.1 92.88 438.6 105.4H438.6z" />
               </svg>
             </div>
-          </FixedItems>
-          {QROpen ? <QRModal closer={setQROpen} /> : null}
-        </Container>
-      ) : (
+            <span>전체 선택</span>
+          </AllSelect>
+          <List>
+            {imsidata.map((item) => (
+              <CheckedItem
+                key={item.id}
+                item={item}
+                setter={setImsidata}
+              ></CheckedItem>
+            ))}
+          </List>
+        </CheckList>
+        <FixedItems>
+          <div>
+            <span>고른 제품 가격</span>
+            <span>{totalPrice.toLocaleString()}원</span>
+          </div>
+          <div onClick={() => setQROpen(true)}>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
+              <path d="M144 32C170.5 32 192 53.49 192 80V176C192 202.5 170.5 224 144 224H48C21.49 224 0 202.5 0 176V80C0 53.49 21.49 32 48 32H144zM128 96H64V160H128V96zM144 288C170.5 288 192 309.5 192 336V432C192 458.5 170.5 480 144 480H48C21.49 480 0 458.5 0 432V336C0 309.5 21.49 288 48 288H144zM128 352H64V416H128V352zM256 80C256 53.49 277.5 32 304 32H400C426.5 32 448 53.49 448 80V176C448 202.5 426.5 224 400 224H304C277.5 224 256 202.5 256 176V80zM320 160H384V96H320V160zM352 448H384V480H352V448zM448 480H416V448H448V480zM416 288H448V416H352V384H320V480H256V288H352V320H416V288z" />
+            </svg>
+          </div>
+        </FixedItems>
+        {QROpen ? <QRModal closer={setQROpen} /> : null}
+      </Container>
+      {/* ) : (
         <div>YOU NOT LOGIN</div>
-      )}
+      )} */}
     </>
   );
 }

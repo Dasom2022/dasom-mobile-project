@@ -2,9 +2,9 @@ import styled from "styled-components";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import NaverLogin from "../Auth/NaverLogin";
-import { userInfoData } from "../atoms";
-import { useRecoilState } from "recoil";
-import { getLogin } from "../api";
+import { qrImg, userInfoData } from "../atoms";
+import { useRecoilState, useSetRecoilState } from "recoil";
+import axios from "axios";
 
 const Wrap = styled.div`
   width: 100vw;
@@ -115,29 +115,85 @@ interface IForm {
   pw: string;
 }
 function Login() {
-  const [userInfo, setUserInfo] = useRecoilState<any>(userInfoData);
+  const JWT_EXPIRY_TIME = 1 * 3600 * 1000;
+  const setUserInfo = useSetRecoilState<any>(userInfoData);
+  const setQr = useSetRecoilState<any>(qrImg);
   const navigate = useNavigate();
-  const { register, handleSubmit, watch } = useForm<IForm>();
+  const { register, handleSubmit } = useForm<IForm>();
   const onSubmit = ({ id, pw }: IForm) => {
-    const LoginApi = getLogin(id, pw);
-    LoginMatch(LoginApi);
+    getLogin(id, pw);
   };
 
-  //로그인 성공여부
-  const LoginMatch = (val: any) => {
-    if (val?.status === 200) {
-      console.log(val);
-      console.log("성공");
-      setUserInfo(val?.headers);
-      navigate("/main");
-    } else {
-      console.log("로그인 실패");
+  const config = {
+    headers: {
+      "Content-Type": "application/json",
+    },
+    withCredentials: true,
+  };
+  //로그인 요청 api
+  function getLogin(id: string, pw: string) {
+    axios
+      .post(
+        "/login",
+        JSON.stringify({
+          username: id,
+          password: pw,
+        }),
+        config
+      )
+      .then(onLoginSuccess)
+      .catch((error) => {
+        // 예외처리 추가 예정
+        console.log(error);
+      });
+    axios
+      .post(
+        "/api/qr",
+        JSON.stringify({
+          url: "string",
+          username: id,
+        }),
+        config
+      )
+      .then((response) => {
+        console.log(response);
+        setQr(response.data);
+      })
+      .catch((error) => {
+        // 예외처리 추가 예정
+        console.log(error);
+      });
+  }
+  const onLoginSuccess = (response: any) => {
+    console.log(response);
+    const { accessToken } = response.data;
+    const { refreshToken } = response.data;
+    localStorage.setItem("accessToken", accessToken);
+    localStorage.setItem("refreshToken", refreshToken);
+    // 토큰 만료 1분전 연장
+    setTimeout(onSilentRefresh, JWT_EXPIRY_TIME - 6000);
+    if (response.status === 200) {
+      setTimeout(() => {
+        setUserInfo(response.data);
+        navigate("/main");
+      }, 500);
     }
   };
+  // 연장처리 리프레쉬
+  const onSilentRefresh = () => {
+    const token = localStorage.getItem("refreshToken");
+    axios
+      .post(`/api/member/auth/state?refreshToken=${token}`)
+      .then(onLoginSuccess)
+      .catch((error) => {
+        // ... 로그인 실패 처리
+      });
+  };
+
   //카카오 로그인시
   const KakaoClick = () => {
     const REST_API_KEY = process.env.REACT_APP_REST_API_KEY;
-    const REDIRECT_URI = process.env.REACT_APP_REDIRECT_URL;
+    const REDIRECT_URI = process.env.REACT_APP_REDIRECT_URI;
     console.log(REST_API_KEY);
     const KAKAO_AUTH_URL = `https://kauth.kakao.com/oauth/authorize?client_id=${REST_API_KEY}&redirect_uri=${REDIRECT_URI}&response_type=code`;
     window.location.href = KAKAO_AUTH_URL;
