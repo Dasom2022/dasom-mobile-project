@@ -1,15 +1,17 @@
+import axios from "axios";
 import { useEffect, useState } from "react";
 import { useRecoilState, useSetRecoilState } from "recoil";
 import styled from "styled-components";
-import { allSelect, allSelectCancel, selectedPrice } from "../atoms";
+import { allSelect, allSelectCancel, selectedPrice, sendItem } from "../atoms";
 
 interface IProps {
   item: {
     id: number;
-    img: string;
-    title: string;
+    itemName: string;
+    itemCode: string;
+    locale: string;
     price: number;
-    count: number;
+    weight: number;
   };
   setter: React.Dispatch<React.SetStateAction<any>>;
 }
@@ -63,22 +65,30 @@ const Info = styled.div`
   margin-top: 25px;
   font-size: 14px;
 `;
-function CheckedItem({ item, setter }: IProps) {
+function CheckedItem({ item, setter, index }: any) {
   const [check, setCheck] = useState(false);
+  const [send, setSend] = useRecoilState(sendItem);
   const [totalPrice, setTotalPrice] = useRecoilState(selectedPrice);
   const [allCheck, setAllCheck] = useRecoilState(allSelect);
   const [allCheckCancel, setAllCheckCancel] = useRecoilState(allSelectCancel);
+  const [count, setCount] = useState(1);
   useEffect(() => {
-    if (check) setTotalPrice((prev) => prev + item.price);
-    else {
+    if (check) {
+      setTotalPrice((prev) => prev + item.price * count);
+      setSend((prev: any) => [...prev, item]);
+    } else {
       setAllCheckCancel(false);
-      if (totalPrice !== 0) setTotalPrice((prev) => prev - item.price);
+      if (totalPrice !== 0) {
+        setCount(1);
+        setTotalPrice((prev) => prev - item.price * count);
+      }
     }
   }, [check]);
   useEffect(() => {
     if (allCheck) setCheck(true);
     else setCheck(false);
   }, [allCheck]);
+  const itemSend = () => {};
   return (
     <Container>
       <Top>
@@ -96,12 +106,29 @@ function CheckedItem({ item, setter }: IProps) {
       </Top>
       <Content>
         <FirstContent>
-          <img src={item.img} />
+          <img src={`${process.env.PUBLIC_URL}/image/1.jpg`} />
         </FirstContent>
         <SecondContent>
-          <Title>{item.title}</Title>
+          <Title>{item.itemName}</Title>
           <Info>
-            <span>{item.count}개</span>
+            <span>{count}개</span>
+            <div
+              onClick={() => {
+                if (check) {
+                  setCount(count + 1);
+                  setTotalPrice((prev) => prev + item.price * count);
+                  setSend((prev: any) => [
+                    ...prev,
+                    {
+                      ...item,
+                      count: count + 1,
+                    },
+                  ]);
+                }
+              }}
+            >
+              +
+            </div>
             <span>{item.price.toLocaleString()}원</span>
           </Info>
         </SecondContent>

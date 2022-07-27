@@ -150,7 +150,7 @@ function Login() {
       .post(
         "/api/qr",
         JSON.stringify({
-          url: "string",
+          url: "http://www.naver.com",
           username: id,
         }),
         config

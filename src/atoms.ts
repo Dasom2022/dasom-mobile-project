@@ -29,3 +29,8 @@ export const qrImg = atom<any>({
   key: "qrImg",
   default: "",
 });
+
+export const sendItem = atom<any>({
+  key: "sendItem",
+  default: [],
+});

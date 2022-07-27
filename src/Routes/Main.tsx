@@ -8,6 +8,7 @@ import {
   allSelectCancel,
   naverToken,
   selectedPrice,
+  sendItem,
   userInfoData,
 } from "../atoms";
 import CheckedItem from "../Components/CheckedItem";
@@ -88,7 +89,7 @@ const FixedItems = styled.div`
     justify-content: space-between;
     align-items: center;
     padding: 0 10px;
-    & > span:last-child {
+    & > span:nth-child(2) {
       font-size: 19px;
       color: red;
     }
@@ -118,45 +119,17 @@ function Main() {
   const [naverTokenData, setNaverTkenData] = useRecoilState<any>(naverToken);
   const [QROpen, setQROpen] = useState(false);
   const totalPrice = useRecoilValue(selectedPrice);
+  const [send, setSend] = useRecoilState(sendItem);
   const [allCheck, setAllCheck] = useRecoilState(allSelect);
   const [allCheckCancel, setAllCheckCancel] = useRecoilState(allSelectCancel);
-  const [imsidata, setImsidata] = useState([
-    {
-      id: 1,
-      img: `${process.env.PUBLIC_URL}/image/1.jpg`,
-      title: "어메지즈 고퀄 프리미엄 7부 박스티",
-      count: 2,
-      price: 33000,
-    },
-    {
-      id: 2,
-      img: `${process.env.PUBLIC_URL}/image/1.jpg`,
-      title: "어메지즈 고퀄 프리미엄 7부 박스티",
-      count: 1,
-      price: 33000,
-    },
-    {
-      id: 3,
-      img: `${process.env.PUBLIC_URL}/image/1.jpg`,
-      title: "어메지즈 고퀄 프리미엄 7부 박스티",
-      count: 1,
-      price: 33000,
-    },
-    {
-      id: 4,
-      img: `${process.env.PUBLIC_URL}/image/1.jpg`,
-      title: "어메지즈 고퀄 프리미엄 7부 박스티",
-      count: 1,
-      price: 33000,
-    },
-    {
-      id: 5,
-      img: `${process.env.PUBLIC_URL}/image/1.jpg`,
-      title: "어메지즈 고퀄 프리미엄 7부 박스티",
-      count: 1,
-      price: 33000,
-    },
-  ]);
+  const [imsidata, setImsidata] = useState<any>([]);
+  console.log(send);
+  useEffect(() => {
+    axios.get("/item/itemList").then((reponse) => {
+      console.log(reponse);
+      setImsidata(reponse.data);
+    });
+  }, []);
   const Logout = async (social: string) => {
     if (social === "KAKAO") {
       //카카오 로그아웃
@@ -199,6 +172,21 @@ function Main() {
   function handleAllSel() {
     setAllCheck((prev) => !prev);
   }
+  const config = {
+    headers: {
+      "Content-Type": "application/json",
+    },
+    withCredentials: true,
+  };
+  const dama = () => {
+    const token = localStorage.getItem("accessToken");
+
+    axios
+      .post(`/item/memberItemPocket?accessToken=${token}`, send, config)
+      .then((resposnse) => {
+        console.log(resposnse);
+      });
+  };
   useEffect(() => {
     setAllCheckCancel((prev) => allCheck);
   }, [allCheck]);
@@ -208,7 +196,7 @@ function Main() {
       <Container>
         <Header>
           <div>DAMA</div>
-          <div>{userInfo?.username}님</div>
+          <div>{userInfo.username}님</div>
           <div onClick={() => Logout(userInfo?.socialType)}>로그아웃</div>
         </Header>
         <CheckList>
@@ -221,7 +209,7 @@ function Main() {
             <span>전체 선택</span>
           </AllSelect>
           <List>
-            {imsidata.map((item) => (
+            {imsidata.map((item: any) => (
               <CheckedItem
                 key={item.id}
                 item={item}
@@ -234,6 +222,7 @@ function Main() {
           <div>
             <span>고른 제품 가격</span>
             <span>{totalPrice.toLocaleString()}원</span>
+            <span onClick={dama}>담기</span>
           </div>
           <div onClick={() => setQROpen(true)}>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
